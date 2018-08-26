@@ -1,0 +1,111 @@
+廖雪峰git教程笔记——作者SimonVan,isfansiming@outlook.com
+
+
+词汇 
+工作区（Working Directory）：就是你在电脑里能看到的目录，比如我的learngit文件夹就是一个工作区
+版本库（Repository）：工作区有一个隐藏目录.git，这个不算工作区，而是Git的版本库。
+暂存区(stage)：Git的版本库里存了很多东西，其中最重要的就是称为stage（或者叫index）的暂存区，还有Git为我们自动创建的第一个分支master，以及指向master的一个指针叫HEAD。
+关系：git add命令实际上就是把要提交的所有修改放到暂存区（Stage），然后，执行git commit就可以一次性把暂存区的所有修改提交到分支。
+
+
+小知识
+为什么Git比其他版本控制系统设计得优秀，因为Git跟踪并管理的是修改，而非文件。
+Git是分布式版本控制系统，?意味着如果把自己的本地版本库推送到远程，就无法版本回退(3.4 git reset)
+Git是分布式版本控制系统，同一个Git仓库，可以分布到不同的机器上。
+Git支持多种协议，包括https，但通过ssh支持的原生git协议速度最快。
+
+正文
+1.创建版本库
+1.1 创建空目录
+$ mkdir learngit
+$ cd learngit
+$ pwd
+/Users/michael/learngit
+#pwd命令用于显示当前目录。在我的Mac上，这个仓库位于/Users/michael/learngit。
+1.2 通过git init命令把这个目录变成Git可以管理的仓库
+	$ git init
+	Initialized empty Git repository in /Users/michael/learngit/.git/
+	
+2.把文件添加到版本库
+2.1 运行git add命令把文件修改添加到暂存区
+	$ git add file1.txt
+	$ git add file2.txt file3.txt
+	#建议里加一句git status查看将要被提交的修改
+2.2 运行git commit命令把暂存区的所有内容提交到当前分支
+	$ git commit -m "add 3 files."
+	[master b2ae050] add 3 files.
+	 3 files changed, 3 insertions(+)
+	 create mode 100644 file1.txt
+	 create mode 100644 file2.txt
+	 create mode 100644 file3.txt
+#git add命令实际上就是把要提交的所有修改放到暂存区（Stage）
+#git commit一次性把暂存区的所有修改提交到分区
+ 
+3.时光机穿梭
+3.1 运行git status命令可以查看仓库当前的状态
+	3.1.1modified后却没有add文件(Changes not staged for commit)
+	3.1.2add后却没有commit的文件(Changes to be committed)
+	3.1.3commit后git status(nothing to commit, working tree clean)
+	3.1.4创建新文件后未add的文件(Untracked)
+3.2 运行git diff命令查看具体修改了什么内容
+	运行git diff HEAD -- readme.txt命令查看工作区和版本库里面最新版本的区别
+3.3 运行git log命令查看提交日志
+	也可用git log --pretty=oneline，如
+	$ git log --pretty=oneline
+	1094adb7b9b3807259d8cb349e7df1d4d6477073 (HEAD -> master) append GPL
+	#其中1094ad……为十六进制的版本号(commit id)
+3.4 运行git reset --hard HEAD~1命令回退到上1个版本，这里的1可以改成其他正整数
+	#在Git中，用HEAD表示当前版本
+	#这时候运行git log会发现少了1个版本，3.6会介绍如何找回
+3.5 运行cat readme.txt命令输出文件内容
+3.6 运行git reset --hard 1094a命令回到未来的某个版本，其实1094a是版本号(看3.3)的前几个数字，没有必要写全，因为git会自动查找
+	#运行git reflog命令查看用户的每一次命令和版本号
+3.7 运行git checkout -- readme.txt 撤销修改(3.9 删除也是一种修改)，使文件回到最近一次git commit或git add时的状态
+3.8 运行git reset HEAD readme.txt 撤销修改，使文件即使git add到暂存区(stage)后也能撤销掉(unstage)，重新放回工作区
+	#git reset命令既可以回退版本，也可以把暂存区的修改回退到工作区。当我们用HEAD时，表示最新的版本。
+3.9 运行rm test.txt命令删除文件管理器中的文件，等价于最原始的删除
+	#这个时候，Git知道你删除了文件，因此，工作区和版本库就不一致了，git status命令会立刻告诉你哪些文件被删除了
+3.10运行git rm test.txt和git commit -m "remove test.txt"命令从版本库(Repository)中删除文件
+	#这个时候，git status命令不会警告
+
+4.远程仓库
+4.1 若创建SSH Key(若用户主目录有.ssh目录则不用创建)
+	$ ssh-keygen -t rsa -C "youremail@example.com"
+	#.ssh目录中id_rsa是私钥，不能泄露出去，id_rsa.pub是公钥，可以放心地告诉任何人
+	#登陆GitHub，打开“Account settings”，“SSH Keys”页面：
+	#然后，点“Add SSH Key”，填上任意Title，
+	#在Key文本框里粘贴id_rsa.pub文件的内容
+	#点“Add Key”
+4.2 创建新的Github仓库
+	#登陆GitHub，然后，在右上角找到“Create a new repo”按钮
+	#在Repository name填入learngit，其他保持默认设置
+	#点击“Create repository”按钮
+	
+4.3 关联本地仓库
+	#根据提示"push an existing repository from the command line"
+	注意要在learngit仓库下运行
+	4.3.1把本地库的所有内容推送到远程库上(git remote……)
+		 添加后，远程库的名字就是origin，这是Git默认的叫法，
+		 也可以改成别的，但是origin这个名字一看就知道是远程库。
+	4.3.2用git push命令把本地库的内容推送到远程(git push -u……)
+		实际上是把当前分支master推送到远程。
+		#由于远程库是空的，我们第一次推送master分支时，
+		 加上了-u参数，Git不但会把本地的master分支内容
+		 推送的远程新的master分支，还会把本地的master分支
+		 和远程的master分支关联起来，在以后的推送或者拉取时
+		 就可以简化命令。
+		#从现在起，只要本地作了提交，就可以通过命令：
+		$ git push origin master 把本地master分支的最新修改推送至GitHub
+		
+4.4	(创建并)从远程库克隆
+	4.4.1登陆GitHub，创建一个新的仓库，名字叫gitskills
+		#勾选Initialize this repository with a README
+	4.4.2运行git clone克隆一个本地库
+		$ git clone git@github.com:michaelliao/gitskills.git
+		#注意修改用户名
+	4.4.3进入gitskills目录查看
+		$ cd gitskills
+		$ ls
+5分支管理
+5.1
+[1]廖雪峰.Git教程 https://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000 2018/8/26
